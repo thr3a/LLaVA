@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: llava:latest
+    stop_grace_period: 0s
+    ipc: host
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    volumes:
+      - "./:/app"
+      - "./cache:/root/.cache"
+      - "./gradio_web_server.py:/usr/local/lib/python3.11/dist-packages/llava/serve/gradio_web_server.py"
+    # command: sleep infinity
+    command: python app.py
+    # command: python -c "from huggingface_hub import snapshot_download; snapshot_download('liuhaotian/llava-v1.6-34b')"
+    ports:
+      - 3000:7860
+    environment:
+      - model=liuhaotian/llava-v1.6-mistral-7b
+      - bits=4
